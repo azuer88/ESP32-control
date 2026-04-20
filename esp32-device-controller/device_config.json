@@ -1,0 +1,27 @@
+[
+  {
+    "id": "led",
+    "label": "Built-in LED",
+    "type": "switch",
+    "value": 0,
+    "pin": 2,
+    "active_low": false
+  },
+  {
+    "id": "pwm",
+    "label": "PWM Output",
+    "type": "slider",
+    "value": 0,
+    "min": 0,
+    "max": 100,
+    "pin": 4
+  },
+  {
+    "id": "boot",
+    "label": "Boot Button",
+    "type": "digital_input",
+    "value": 0,
+    "pin": 0,
+    "active_low": true
+  }
+]
