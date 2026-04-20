@@ -41,6 +41,10 @@ class BleServer:
         self._connections = set()
         self._controls_handle = None
         self._command_handle = None
+        self._mesh = None
+
+    def set_mesh(self, mesh):
+        self._mesh = mesh
 
     def start(self):
         self._ble.active(True)
@@ -91,6 +95,13 @@ class BleServer:
             self._ble.gatts_notify(conn_handle, self._controls_handle, payload)
         print("Pushed update ({} bytes)".format(len(payload)))
 
+    async def push_raw(self, payload):
+        """Push an arbitrary JSON payload to all connected clients (used for remote mesh state)."""
+        if not self._connections:
+            return
+        for conn_handle in self._connections:
+            self._ble.gatts_notify(conn_handle, self._controls_handle, payload)
+
     async def _push_controls(self, conn_handle):
         await asyncio.sleep_ms(500)
         if conn_handle not in self._connections:
@@ -105,7 +116,10 @@ class BleServer:
             if cmd.get("cmd") == "list":
                 asyncio.create_task(self._push_controls(conn_handle))
                 return
-            self._controls.apply(cmd["id"], int(cmd["value"]))
-            print("Command: {} = {}".format(cmd["id"], cmd["value"]))
+            ctrl_id, value = cmd["id"], int(cmd["value"])
+            self._controls.apply(ctrl_id, value)
+            if self._mesh:
+                self._mesh.broadcast_command(ctrl_id, value)
+            print("Command: {} = {}".format(ctrl_id, value))
         except Exception as e:
             print("Command parse error:", e)

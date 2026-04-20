@@ -2,12 +2,14 @@
 
 A two-part project for controlling and monitoring an ESP32 microcontroller over Bluetooth Low Energy (BLE):
 
-- **`esp32-device-controller/`** — MicroPython firmware that runs on the ESP32, exposing GPIO pins as a BLE GATT server
+- **`esp32-device-controller/`** — MicroPython firmware that runs on the ESP32, exposing GPIO pins as a BLE GATT server with optional ESP-NOW mesh networking
 - **`esp32-remote-control/`** — Android (Kotlin) companion app that connects over BLE and renders controls dynamically from the device's config
 
 ## How It Works
 
-The ESP32 advertises a BLE service. The Android app connects, requests the control list, and renders switches and sliders. User interactions are sent as JSON commands; the ESP32 applies them to the appropriate GPIO pin. Digital inputs (buttons, sensors) are polled every 50 ms and pushed to the app automatically when they change.
+The ESP32 advertises a BLE service. The Android app connects to one node (the **gateway**), requests the control list, and renders switches and sliders. User interactions are sent as JSON commands; the gateway applies them locally and broadcasts them over an ESP-NOW mesh to any other ESP32 nodes in range. Digital inputs (buttons, sensors) are polled every 50 ms — changes are pushed to the app and broadcast to all mesh peers automatically.
+
+All nodes run identical firmware. The gateway role is taken by whichever node has a BLE client connected.
 
 ## What You Can Attach
 
@@ -47,7 +49,7 @@ Controls are defined in `esp32-device-controller/device_config.json` — no firm
 
 ## Requirements
 
-- ESP32 board running **MicroPython v1.26+**
+- ESP32 board(s) running **MicroPython v1.26+** (ESP-NOW and ESPNow API required)
 - Android phone with BLE support
 - [`mpremote`](https://docs.micropython.org/en/latest/reference/mpremote.html) for deploying firmware to the device
 
